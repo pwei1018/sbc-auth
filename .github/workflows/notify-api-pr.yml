@@ -26,7 +26,7 @@ jobs:
           nats:
             image: 'nats:latest'
             ports:
-            - "4222:8222"
+            - "4222:4222"
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
