@@ -90,7 +90,7 @@ FAILURE_EMAIL_TIME_FRAME = CONFIG('FAILURE_EMAIL_TIME_FRAME', cast=int, default=
 DB_USER = CONFIG('DATABASE_TEST_USERNAME', cast=str, default='postgres')
 DB_PASSWORD = CONFIG('DATABASE_TEST_PASSWORD', cast=Secret, default='postgres')
 DB_NAME = CONFIG('DATABASE_TEST_NAME', cast=str, default='postgres')
-DB_HOST = CONFIG('DATABASE_TEST_HOST', cast=str, default='postgres')
+DB_HOST = CONFIG('DATABASE_TEST_HOST', cast=str, default='localhost')
 DB_PORT = CONFIG('DATABASE_TEST_PORT', cast=int, default=5432)
 SQLALCHEMY_TEST_DATABASE_URI = CONFIG(
     'DATABASE_TEST_URL',
