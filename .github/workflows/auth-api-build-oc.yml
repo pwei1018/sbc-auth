@@ -24,3 +24,4 @@ jobs:
           oc version
           oc ${{ secrets.oc_parameters }}
           oc projects
+          oc start-build auth-api-gh --wait
