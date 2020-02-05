@@ -3,6 +3,7 @@ name: Notify API BUILD CI
 on:
   push:
     branches:
+      - gh-test
       - development
     paths:
       - "notify-api/**"
