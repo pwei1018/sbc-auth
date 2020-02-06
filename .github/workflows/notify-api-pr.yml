@@ -3,8 +3,9 @@ name: Notify API PR CI
 on:
   push:
     branches:
-      - gh-test
       - development
+    paths:
+      - "notify-api/**"
 
 jobs:
   notify-api-pr:
