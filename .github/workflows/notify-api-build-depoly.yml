@@ -63,7 +63,7 @@ jobs:
         working-directory: .
         run: |
           op --version
-          vaults='[{ "vault": "shared", "application": ["keycloak"]}, {"vault": "relationship","application": ["postgres", "notify-api"]}]'
+          vaults='[{ "vault": "shared", "application": ["email"]}, {"vault": "relationship","application": ["postgres-notify", "notify-api"]}]'
           ./setenv_deploy.sh ${{ secrets.op_parameters }} -e "dev" -v "${vaults}" -c "dc/notify-api-gh-dev"
       - name: Rollout new deployment
         working-directory: ./notify-api
