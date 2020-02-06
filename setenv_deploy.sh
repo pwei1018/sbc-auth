@@ -7,11 +7,12 @@
 usage() {
   cat <<-EOF
   A helper script to get the secrcts from 1password' vault and set it to environment.
-  Usage: . ./setenv_1pass.sh [-h -d <subdomainName> -u <accountName>]
+  Usage: ./setenv_deploy.sh [-h -d <subdomainName> -u <accountName>]
                              -k <secretKey>
                              -p <masterPassword>
                              -e <environment>
                              -v <vaultDetails>
+                             -c <deploymentConfig>
   OPTIONS:
   ========
     -h prints the usage for the script.
