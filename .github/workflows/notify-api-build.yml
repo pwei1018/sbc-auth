@@ -1,20 +1,19 @@
-name: Notify API BUILD CI
+name: Notify API BUILD/DEPLOY CI/CD
 
 on:
   push:
     branches:
-      - gh-test
       - development
+    paths:
+      - "notify-api/**"
 
 env:
-  IMAGE_NAME: notify-api-gh
+  IMAGE_NAME: notify-api
+  TAG_NAME: dev
 
 jobs:
   notify-api-build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.7]
     steps:
       - uses: actions/checkout@v2
       - name: Log into registry
@@ -33,8 +32,28 @@ jobs:
           # Strip "v" prefix from tag name
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "gh-test" ] && VERSION=latest
+          [ "$VERSION" == "development" ] && VERSION=latest
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
           docker tag image $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
+          docker tag $IMAGE_ID:$VERSION $IMAGE_ID:TAG_NAME
+
+
+  notify-api-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install openshift cli
+        working-directory: .
+        run: |
+          sudo curl -sLo /tmp/oc.tar.gz https://github.com/openshift/origin/releases/download/v3.11.0/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit.tar.gz
+          sudo tar xzvf /tmp/oc.tar.gz -C /tmp/
+          sudo mv /tmp/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/oc /usr/local/bin/
+          sudo rm -rf /tmp/oc.tar.gz /tmp/openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit
+          sudo chmod +x /usr/local/bin/oc
+          oc version
+          oc ${{ secrets.oc_parameters }}
+          oc ${{ secrets.OPENSHIFT_REPOSITORY_DEV }}
+          oc rollout latest dc/$IMAGE_NAME-$TAG_NAME
+          oc rollout status dc/$IMAGE_NAME-$TAG_NAME -w
