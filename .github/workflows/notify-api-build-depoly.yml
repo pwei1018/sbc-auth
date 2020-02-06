@@ -36,7 +36,8 @@ jobs:
           echo VERSION=$VERSION
           docker tag image $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
-          docker tag $IMAGE_ID:$VERSION $IMAGE_ID:$TAG_NAME
+          docker tag image $IMAGE_ID:$TAG_NAME
+          docker push $IMAGE_ID:$TAG_NAME
       - name: Install openshift cli
         working-directory: ./notify-api
         run: |
