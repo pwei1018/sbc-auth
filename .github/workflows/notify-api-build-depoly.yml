@@ -36,7 +36,7 @@ jobs:
           echo VERSION=$VERSION
           docker tag image $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
-          docker tag $IMAGE_ID:$VERSION $IMAGE_ID:TAG_NAME
+          docker tag image $IMAGE_ID:TAG_NAME
       - name: Install openshift cli
         working-directory: ./notify-api
         run: |
@@ -64,7 +64,7 @@ jobs:
         run: |
           op --version
           vaults='[{ "vault": "shared", "application": ["keycloak"]}, {"vault": "relationship","application": ["postgres", "notify-api"]}]'
-          source setenv_deploy.sh ${{ secrets.op_parameters }} -e "dev" -v "${vaults}" -c "dc/notify-api-gh-dev"
+          ./setenv_deploy.sh ${{ secrets.op_parameters }} -e "dev" -v "${vaults}" -c "dc/notify-api-gh-dev"
       - name: Rollout new deployment
         working-directory: ./notify-api
         run: |
