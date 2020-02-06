@@ -11,7 +11,7 @@ env:
   TAG_NAME: dev
 
 jobs:
-  notify-api-build:
+  notify-api-build-depoly:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,18 +31,12 @@ jobs:
           # Strip "v" prefix from tag name
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
           # Use Docker `latest` tag convention
-          [ "$VERSION" == "development" ] && VERSION=latest
+          [ "$VERSION" == "gh-test" ] && VERSION=latest
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
           docker tag image $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:$VERSION
           docker tag $IMAGE_ID:$VERSION $IMAGE_ID:TAG_NAME
-
-
-  notify-api-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
       - name: Install openshift cli
         working-directory: ./notify-api
         run: |
@@ -70,7 +64,7 @@ jobs:
         run: |
           op --version
           vaults='[{ "vault": "shared", "application": ["keycloak"]}, {"vault": "relationship","application": ["postgres", "notify-api"]}]'
-          source setenv_deploy.sh ${{ secrets.op_parameters }} -e $TAG_NAME -v "${vaults}" -c "dc/$IMAGE_NAME-$TAG_NAME"
+          source setenv_deploy.sh ${{ secrets.op_parameters }} -e $TAG_NAME -v "${vaults}" -c "dc/notify-api-gh-dev"
       - name: Rollout new deployment
         working-directory: ./notify-api
         run: |
