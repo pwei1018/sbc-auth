@@ -3,7 +3,7 @@ name: Auth API BUILD CI
 on:
   push:
     branches:
-      - development
+      - gh-test
 
 jobs:
   auth-api-build:
