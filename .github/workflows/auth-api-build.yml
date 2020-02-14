@@ -15,7 +15,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: Log into registry
         run: echo "${{ secrets.OPENSHIFT_TOKEN }}" | docker login ${{ secrets.OPENSHIFT_REGISTRY }} -u ${{ secrets.OPENSHIFT_SA_NAME}} --password-stdin
+      - name: Build image
+        working-directory: ./auth-api
+        run: docker pull ${{ secrets.OPENSHIFT_REGISTRY }}/d7eovc-tools/python:3.7
       - uses: vrutkovs/action-s2i@master
         with:
-          base: ${{ secrets.OPENSHIFT_REGISTRY }}/d7eovc-tools/python:3.7
-          image: ${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/auth-api-gh:latest
+          base: python:3.7
+          image: auth-api-gh:latest
