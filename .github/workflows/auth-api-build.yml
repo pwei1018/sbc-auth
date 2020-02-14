@@ -25,7 +25,7 @@ jobs:
       - uses: vrutkovs/action-s2i@master
         with:
           base: ${{ secrets.OPENSHIFT_REGISTRY }}/d7eovc-tools/python:3.7
-          image: $IMAGE_NAME:latest
+          image: ${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/auth-api-gh
       - name: Push image
         working-directory: ./auth-api
         run: |
