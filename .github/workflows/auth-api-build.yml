@@ -13,7 +13,9 @@ jobs:
         python-version: [3.7]
     steps:
       - uses: actions/checkout@v2
+      - name: Log into registry
+        run: echo "${{ secrets.OPENSHIFT_TOKEN }}" | docker login ${{ secrets.OPENSHIFT_REGISTRY }} -u ${{ secrets.OPENSHIFT_SA_NAME}} --password-stdin
       - uses: vrutkovs/action-s2i@master
         with:
-          base: rhscl/python-37-rhel7
+          base: ${{ secrets.OPENSHIFT_REGISTRY }}/d7eovc-tools/python:3.7
           image: auth-api:latest
