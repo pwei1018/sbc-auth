@@ -20,5 +20,5 @@ jobs:
         run: docker pull ${{ secrets.OPENSHIFT_REGISTRY }}/d7eovc-tools/python:3.7
       - uses: vrutkovs/action-s2i@master
         with:
-          base: python:3.7
+          base: ${{ secrets.OPENSHIFT_REGISTRY }}/d7eovc-tools/python:3.7
           image: auth-api-gh:latest
