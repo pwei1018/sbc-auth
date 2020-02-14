@@ -5,6 +5,10 @@ on:
     branches:
       - gh-test
 
+env:
+  IMAGE_NAME: auth-api-gh
+  TAG_NAME: dev
+
 jobs:
   auth-api-build:
     runs-on: ubuntu-latest
@@ -21,4 +25,11 @@ jobs:
       - uses: vrutkovs/action-s2i@master
         with:
           base: ${{ secrets.OPENSHIFT_REGISTRY }}/d7eovc-tools/python:3.7
-          image: auth-api-gh:latest
+          image: ${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/$IMAGE_NAME:latest
+      - name: Push image
+        working-directory: ./auth-api
+        run: |
+          IMAGE_ID=${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/$IMAGE_NAME
+          docker push ${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/$IMAGE_NAME:latest
+          docker image tag $IMAGE_ID:latest $IMAGE_ID:$TAG_NAME
+          docker push $IMAGE_ID:$TAG_NAME
