@@ -15,6 +15,7 @@ jobs:
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         if: always()
         with:
+          type: ${{ job.status }}
           job_name: "*New PR to Test:  ${{ github.event.pull_request.title }}*"
           channel: "#relationship-developers"
           url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
