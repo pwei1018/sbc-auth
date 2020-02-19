@@ -15,7 +15,10 @@ jobs:
         if: always()
         with:
           type: ${{ job.status }}
-          job_name: "*This Relationship team PR will merged to Test in half hour, if you have any concerns about the changes you can put `Don't Merge` label in it: ${{ github.event.pull_request.title }}*"
+          job_name: "*This Relationship team PR will merged to Test in half hour, if you have any concerns about the
+          changes you can put <span class='IssueLabel--big d-inline-block v-align-top lh-condensed'
+          style='background-color: #0e00d8; color: #ffffff' title='Do Not Merge'>Do Not Merge</span>
+          label in it: ${{ github.event.pull_request.title }}*"
           channel: "#relationship-developers"
           url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
           token: ${{ secrets.GITHUB_TOKEN }}
