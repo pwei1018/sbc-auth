@@ -11,31 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Dump PR Title
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: echo "$PR_TITLE"
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: Dump job context
-        env:
-          JOB_CONTEXT: ${{ toJson(job) }}
-        run: echo "$JOB_CONTEXT"
-      - name: Dump steps context
-        env:
-          STEPS_CONTEXT: ${{ toJson(steps) }}
-        run: echo "$STEPS_CONTEXT"
-      - name: Dump runner context
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-        run: echo "$RUNNER_CONTEXT"
-      - name: Dump strategy context
-        env:
-          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-        run: echo "$STRATEGY_CONTEXT"
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
+      - name: Rocket.Chat Notification
+        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
+        if: always()
+        with:
+          job_name: "*New PR to Test:  ${{ github.event.pull_request.title }}*"
+          channel: "#relationship-developers"
+          url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
+          token: ${{ secrets.GITHUB_TOKEN }}
