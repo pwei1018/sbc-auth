@@ -3,7 +3,7 @@ name: Deployment to Test PR CI
 on:
   pull_request:
     branches:
-      - master
+      - gh-test
 
 jobs:
   test-pr:
