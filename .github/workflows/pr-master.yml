@@ -3,11 +3,10 @@ name: Deployment to Test PR CI
 on:
   pull_request:
     branches:
-      - gh-test
-      - development
+      - master
 
 jobs:
-  auth-api-pr:
+  test-pr:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,7 +15,7 @@ jobs:
         if: always()
         with:
           type: ${{ job.status }}
-          job_name: "*New PR to Test:  ${{ github.event.pull_request.title }}*"
+          job_name: "*This Relationship team PR will merged to Test in half hour, if you have any concerns about the changes you can put `Don't Merge` label in it: ${{ github.event.pull_request.title }}*"
           channel: "#relationship-developers"
           url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
           token: ${{ secrets.GITHUB_TOKEN }}
