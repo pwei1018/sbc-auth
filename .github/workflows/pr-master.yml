@@ -6,27 +6,17 @@ on:
       - gh-test
       - development
 
-
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: "*/5 * * * *"
 
 jobs:
   test-pr:
     if: not contains(github.event.label.name, 'Do Not Merge') && new Date().addHours(0.5) < github.event.pull_request.created_at
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Show current Date/time
+        run: echo new Date().addHours(0.5)
 
-      - name: Rocket.Chat Notification
-        uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
-        if: always()
-        with:
-          type: ${{ job.status }}
-          job_name: "This Relationship team PR will deploy to Test in half hour, if you have any concerns about the
-          changes you can put *Do Not Merge* label in it: ${{ github.event.pull_request.title }}"
-          channel: "#relationship-developers"
-          url: ${{ secrets.ROCKETCHAT_WEBHOOK }}
-          token: ${{ secrets.GITHUB_TOKEN }}
   test-pr-merge:
     if: not contains(github.event.label.name, 'Do Not Merge') && new Date().addHours(0.5) > github.event.pull_request.created_at
     runs-on: ubuntu-latest
