@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - gh-test
-    paths:
-      - "auth-api/**"
-      - "auth-web/**"
-      - "notify-api/**"
-      - "status-api/**"
 
 jobs:
   auth-api-pr:
