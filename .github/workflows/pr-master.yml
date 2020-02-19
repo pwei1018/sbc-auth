@@ -3,7 +3,7 @@ name: Deployment to Test PR CI
 on:
   push:
     branches:
-      - gh-tests
+      - gh-test
     paths:
       - "auth-api/**"
       - "auth-web/**"

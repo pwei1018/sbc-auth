@@ -1,13 +1,15 @@
-name: Auth API BUILD CI
+name: Auth API CD
 
 on:
   push:
     branches:
-      - development
+      - master
+    paths:
+      - "auth-api/**"
 
 env:
   IMAGE_NAME: auth-api-gh
-  TAG_NAME: dev
+  TAG_NAME: test
 
 jobs:
   auth-api-build:
@@ -17,24 +19,6 @@ jobs:
         python-version: [3.7]
     steps:
       - uses: actions/checkout@v2
-      - name: Log into registry
-        run: echo "${{ secrets.OPENSHIFT_TOKEN }}" | docker login ${{ secrets.OPENSHIFT_REGISTRY }} -u ${{ secrets.OPENSHIFT_SA_NAME}} --password-stdin
-      - name: Pull image
-        working-directory: ./auth-api
-        run: docker pull ${{ secrets.OPENSHIFT_REGISTRY }}/d7eovc-tools/python:3.7
-      - name: Build image
-        uses: vrutkovs/action-s2i@master
-        with:
-          path: ./auth-api
-          base: ${{ secrets.OPENSHIFT_REGISTRY }}/d7eovc-tools/python:3.7
-          image: ${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/${{env.IMAGE_NAME}}
-      - name: Push image
-        working-directory: ./auth-api
-        run: |
-          IMAGE_ID=${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/$IMAGE_NAME
-          docker push ${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/$IMAGE_NAME:latest
-          docker image tag $IMAGE_ID:latest $IMAGE_ID:$TAG_NAME
-          docker push $IMAGE_ID:$TAG_NAME
       - name: Install openshift cli
         working-directory: ./auth-api
         run: |
@@ -62,9 +46,9 @@ jobs:
         run: |
           op --version
           vaults='[{ "vault": "shared", "application": ["keycloak"]}, {"vault": "relationship","application": ["postgres-auth", "auth-api"]}]'
-          ./setenv_deploy.sh ${{ secrets.op_parameters }} -e "dev" -v "${vaults}" -c "dc/${IMAGE_NAME}"
+          ./setenv_deploy.sh ${{ secrets.op_parameters }} -e "test" -v "${vaults}" -c "dc/${IMAGE_NAME}-TAG-NAME"
       - name: Rollout new deployment
         working-directory: ./auth-api
         run: |
-          oc rollout latest dc/$IMAGE_NAME
-          oc rollout status dc/$IMAGE_NAME -w
+          oc rollout latest dc/$IMAGE_NAME-$TAG_NAME
+          oc rollout status dc/$IMAGE_NAME-$TAG_NAME -w
