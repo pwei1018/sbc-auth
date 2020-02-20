@@ -58,7 +58,7 @@ jobs:
         run: |
           op --version
           vaults='[{ "vault": "shared", "application": ["keycloak"]}, {"vault": "relationship","application": ["postgres-auth", "auth-api"]}]'
-          ./setenv_deploy.sh ${{ secrets.op_parameters }} -e "dev" -v "${vaults}" -c "dc/${IMAGE_NAME}-TAG_NAME"
+          ./setenv_secret.sh ${{ secrets.op_parameters }} -e "dev" -v "${vaults}" -a "${IMAGE_NAME}-${TAG_NAME}"
       - name: Rollout new deployment
         working-directory: ./auth-api
         run: |

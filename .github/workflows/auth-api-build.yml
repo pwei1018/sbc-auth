@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - development
+    paths:
+      - "auth-api/**"
 
 env:
   IMAGE_NAME: auth-api-gh
@@ -32,7 +34,7 @@ jobs:
         working-directory: ./auth-api
         run: |
           IMAGE_ID=${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/$IMAGE_NAME
-          docker push ${{ secrets.OPENSHIFT_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY }}/$IMAGE_NAME:latest
+          docker push $ IMAGE_ID:latest
           docker image tag $IMAGE_ID:latest $IMAGE_ID:$TAG_NAME
           docker push $IMAGE_ID:$TAG_NAME
       - name: Install openshift cli
@@ -62,7 +64,7 @@ jobs:
         run: |
           op --version
           vaults='[{ "vault": "shared", "application": ["keycloak"]}, {"vault": "relationship","application": ["postgres-auth", "auth-api"]}]'
-          ./setenv_deploy.sh ${{ secrets.op_parameters }} -e "dev" -v "${vaults}" -c "dc/${IMAGE_NAME}"
+          ./setenv_secret.sh ${{ secrets.op_parameters }} -e "dev" -v "${vaults}" -a "${IMAGE_NAME}-${TAG_NAME}"
       - name: Rollout new deployment
         working-directory: ./auth-api
         run: |
