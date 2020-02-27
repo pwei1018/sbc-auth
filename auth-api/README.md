@@ -55,3 +55,4 @@ To prepare your local database:
 ## Openshift Environment
 
 View the [document](../docs/build-deploy.md).
+
