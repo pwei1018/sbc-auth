@@ -39,46 +39,22 @@ jobs:
       EMAIL_SECURITY_PASSWORD_SALT: "my_pwd_salt"
       EMAIL_TOKEN_SECRET_KEY: "mySecretKey"
 
-    strategy:
-      matrix:
-        python-version: [3.7]
-    services:
-      postgres:
-        image: postgres:11
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-        ports:
-          - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        working-directory: ./auth-api
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r requirements/dev.txt
-      - name: Test with pytest
-        working-directory: ./auth-api
-        run: |
-          pip install .
-          export PYTHONPATH=./src/
-          pytest
-
-  notify-api-check:
-    runs-on: ubuntu-latest
-
-    env:
-      FLASK_ENV: "testing"
-      DATABASE_TEST_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+      SERVICE_SCHEDULE: '[
+        {
+        "service_name": "PAYBC",
+        "available": [
+        {"dayofweek": "1", "from": "6:00", "to": "21:00"},
+        {"dayofweek": "2", "from": "15:05", "to": "21:00"},
+        {"dayofweek": "3", "from": "6:00", "to": "21:00"},
+        {"dayofweek": "4", "from": "15:05", "to": "21:00"},
+        {"dayofweek": "5", "from": "6:00", "to": "21:00"},
+        {"dayofweek": "6", "from": "6:30", "to": "21:00"},
+        {"dayofweek": "7", "from": "6:30", "to": "21:00"}
+        ],
+        "outage": [
+        ]
+        }
+        ]'
 
     strategy:
       matrix:
@@ -106,92 +82,63 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
-        working-directory: ./notify-api
+        working-directory: ./auth-api
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements/dev.txt
       - name: Test with pytest
+        working-directory: ./auth-api
+        run: |
+          pip install .
+          export PYTHONPATH=./src/
+          pytest
+      - name: Install dependencies - notify-api
+        working-directory: ./notify-api
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements/dev.txt
+      - name: Test with pytest  - notify-api
         working-directory: ./notify-api
         run: |
           pip install .
           export PYTHONPATH=./src/
           pytest
-
-  status-api-check:
-    runs-on: ubuntu-latest
-
-    env:
-      FLASK_ENV: "testing"
-      SERVICE_SCHEDULE: '[
-        {
-        "service_name": "PAYBC",
-        "available": [
-        {"dayofweek": "1", "from": "6:00", "to": "21:00"},
-        {"dayofweek": "2", "from": "15:05", "to": "21:00"},
-        {"dayofweek": "3", "from": "6:00", "to": "21:00"},
-        {"dayofweek": "4", "from": "15:05", "to": "21:00"},
-        {"dayofweek": "5", "from": "6:00", "to": "21:00"},
-        {"dayofweek": "6", "from": "6:30", "to": "21:00"},
-        {"dayofweek": "7", "from": "6:30", "to": "21:00"}
-        ],
-        "outage": [
-        ]
-        }
-        ]'
-
-    strategy:
-      matrix:
-        python-version: [3.7]
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+      - name: Install dependencies - status-api
         working-directory: ./status-api
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements/dev.txt
-      - name: Test with pytest
+      - name: Test with pytest - status-api
         working-directory: ./status-api
         run: |
           pip install .
           export PYTHONPATH=./src/
           pytest
-
-  auth-web-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
       - name: install
+        working-directory: ./auth-web
         run: |
           npm ci
         env:
           CI: true
       - name: lint
+        working-directory: ./auth-web
         run: |
           npm run lint
         env:
           CI: true
       - name: unit test
+        working-directory: ./auth-web
         run: |
           npm run test:unit
         env:
           CI: true
-
-  move-to-test-notify:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
       - name: Rocket.Chat Notification
         uses: RocketChat/Rocket.Chat.GitHub.Action.Notification@master
         if: success()
