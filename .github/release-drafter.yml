@@ -25,6 +25,6 @@ version-resolver:
       - "patch"
   default: patch
 template: |
-  ## Changes123
+  ## What's Changed
 
   $CHANGES
