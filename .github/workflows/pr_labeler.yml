@@ -1,7 +1,7 @@
 name: PR Labeler
 on:
   pull_request:
-    types: [opened]
+    types: [opened, labeled, unlabeled, synchronize]
 
 jobs:
   pr-labeler:
@@ -16,4 +16,4 @@ jobs:
       - uses: jesusvasquez333/verify-pr-label-action@v1.1.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-          valid-labels: "bug, enhancement, feature"
+          valid-labels: "bug, enhancement, feature, fix, devops, documentation, maintenance"
