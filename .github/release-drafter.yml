@@ -18,12 +18,11 @@ categories:
       - "maintenance"
   - title: "📝 Documentation"
     label: "documentation"
+exclude-labels:
+  - "skip-changelog"
 change-template: "- #$NUMBER: $TITLE "
 template: |
   ## What' new
-
-  Welcome to the $name release of BC Registries authentication and authorization services. \
-  There are a number of updates in this version that we hope you will like, some of the key highlights include:
 
   $CHANGES
 
