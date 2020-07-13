@@ -1,4 +1,4 @@
-name-template: "${{ steps.date.outputs.date }} (version v$NEXT_PATCH_VERSION)"
+name-template: "$name"
 tag-template: "v$NEXT_PATCH_VERSION"
 categories:
   - title: "🚀 Features"
@@ -22,7 +22,7 @@ change-template: "- #$NUMBER: $TITLE "
 template: |
   ## What' new
 
-  Welcome to the ${{ steps.date.outputs.date }} release of BC Registries authentication and authorization services. \
+  Welcome to the "$name" release of BC Registries authentication and authorization services. \
   There are a number of updates in this version that we hope you will like, some of the key highlights include:
 
   $CHANGES
