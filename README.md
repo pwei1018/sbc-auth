@@ -5,7 +5,8 @@
 
 BC Registries and Online Services is beginning a phased, multi-year modernization initiative to replace and improve the applications used for BC Online, the Corporate, Personal Property and Manufactured Homes Registries. Our vision is to develop a better service experience and make it easier for citizens and businesses to complete transactions and filings with the province of BC and across other jurisdictions, manage accounts and pay for services.
 
-Release:
+Release: `git log -n1 --pretty='format:%cd' --date=format:'%B %Y'`
+
 https://semver.org/
 
 
