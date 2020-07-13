@@ -1,4 +1,4 @@
-name-template: "`r format(Sys.time(), '%B, %Y')` (version v$NEXT_PATCH_VERSION)"
+name-template: "`git log -n1 --pretty='format:%cd' --date=format:'%B, %Y'` (version v$NEXT_PATCH_VERSION)"
 tag-template: "v$NEXT_PATCH_VERSION"
 categories:
   - title: "🚀 Features"
@@ -22,7 +22,11 @@ change-template: "- #$NUMBER: $TITLE "
 template: |
   ## What' new
 
-  Welcome to the `r format(Sys.time(), '%B, %Y')` release of BC Registiries authentication and authorization services.
+  Welcome to the `git log -n1 --pretty='format:%cd' --date=format:'%B, %Y'` release of BC Registiries authentication and authorization services.
   There are a number of updates in this version that we hope you will like, some of the key highlights include:
 
   $CHANGES
+
+  ## Thanks to
+
+  $CONTRIBUTORS
