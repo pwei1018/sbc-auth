@@ -6,13 +6,13 @@
 # -----------------------------------------------------------------------------------------------------------------
 usage() {
   cat <<-EOF
-  A helper script to get the secrcts from 1password' vault and set it to github actions virtual environment.
-  Usage: ./1pass_env.sh [-h -d <subdomainName> -u <accountName>]
-                            -k <secretKey>
-                            -p <masterPassword>
-                            -e <environment>
-                            -v <vaultDetails>
-                            -a <appName>
+  A helper script to compare the secrets from 1password' vault for different environments.
+  Usage: ./1pass_secret.sh [-h -d <subdomainName> -u <accountName>]
+                             -k <secretKey>
+                             -p <masterPassword>
+                             -e <environments>
+                             -v <vaultDetails>
+                             -a <appName>
 
   OPTIONS:
   ========
@@ -22,7 +22,7 @@ usage() {
     -u The account name of the 1password account, default is bcregistries.devops@gmail.com.
     -k The secret key of the 1password account.
     -p The master password of the 1password account.
-    -e The environment of the vault, for example pytest/dev/test/prod.
+    -e The environments of the vault, for example : "dev test"/"test prod".
     -v A list of vault and application name of the 1password account, for example:
        [
           {
@@ -57,7 +57,7 @@ while getopts h:d:u:k:p:v:e: FLAG; do
     k ) SECRET_KEY=$OPTARG ;;
     p ) MASTER_PASSWORD=$OPTARG ;;
     v ) VAULT=$OPTARG ;;
-    e ) ENVIRONMENT=$OPTARG ;;
+    e ) ENVIRONMENTS=$OPTARG ;;
     \? ) #unrecognized option - show help
       echo -e \\n"Invalid script option: -${OPTARG}"\\n
       usage
@@ -77,9 +77,15 @@ if [ -z "${USERNAME}" ]; then
   USERNAME=bcregistries.devops@gmail.com
 fi
 
-if [ -z "${SECRET_KEY}" ] || [ -z "${MASTER_PASSWORD}" ] || [ -z "${VAULT}" ]  ||  [ -z "${ENVIRONMENT}" ]; then
+if [ -z "${SECRET_KEY}" ] || [ -z "${MASTER_PASSWORD}" ] || [ -z "${VAULT}" ]  ||  [ -z "${ENVIRONMENTS}" ]; then
   echo -e \\n"Missing parameters - secret key, master password, vault or environment"\\n
   usage
+fi
+
+envs=(${ENVIRONMENTS})
+if [[ ${#envs[@]} != 2 ]]; then
+  echo -e \\n"Environments must be two values"\\n
+  exit
 fi
 
 # Login to 1Password../s
@@ -87,33 +93,49 @@ fi
 # For more details see https://support.1password.com/command-line-getting-started/
 eval $(echo "${MASTER_PASSWORD}" | op signin ${DOMAIN_NAME} ${USERNAME} ${SECRET_KEY})
 
-
-for vault_name in $(echo "${VAULT}" | jq -r '.[] | @base64' ); do
-  _jq() {
-    echo ${vault_name} | base64 --decode | jq -r ${1}
-  }
-  for application_name in $(echo "$(_jq '.application')" | jq -r '.[]| @base64' ); do
-    _jq_app() {
-      echo ${application_name} | base64 --decode
+num=0
+for env_name in "${envs[@]}"; do
+  num=$((num+1))
+  for vault_name in $(echo "${VAULT}" | jq -r '.[] | @base64' ); do
+    _jq() {
+      echo ${vault_name} | base64 --decode | jq -r ${1}
     }
-
-    # My setup uses a 1Password type of 'Password' and stores all records within a
-    # single section. The label is the key, and the value is the value.
-    ev=`op get item --vault=$(_jq .vault) ${ENVIRONMENT}`
-
-    # Convert to base64 for multi-line secrets.
-    # The schema for the 1Password type uses t as the label, and v as the value.
-    # Set secrets to env
-    for row in $(echo ${ev} | jq -r -c '.details.sections[] | select(.title=='\"$(_jq_app)\"') | .fields[] | @base64'); do
-      _envvars() {
-        echo ${row} | base64 --decode | jq -r ${1}
+    for application_name in $(echo "$(_jq '.application')" | jq -r '.[]| @base64' ); do
+      _jq_app() {
+        echo ${application_name} | base64 --decode
       }
 
-      echo "Setting environment variable $(_envvars '.t')"
-      echo ::add-mask::$(_envvars '.v')
-      echo ::set-env name=$(_envvars '.t')::$(_envvars '.v')
+      # My setup uses a 1Password type of 'Password' and stores all records within a
+      # single section. The label is the key, and the value is the value.
+      ev=`op get item --vault=$(_jq .vault) ${env_name}`
 
+      # Convert to base64 for multi-line secrets.
+      # The schema for the 1Password type uses t as the label, and v as the value.
+      # Set secrets to env
+      for row in $(echo ${ev} | jq -r -c '.details.sections[] | select(.title=='\"$(_jq_app)\"') | .fields[] | @base64'); do
+        _envvars() {
+          echo ${row} | base64 --decode | jq -r ${1}
+        }
+        echo $(_envvars '.t') >> t$num.txt
+      done
     done
   done
 done
+
+if [[ -z $(comm -23 <(sort t1.txt) <(sort t2.txt)) ]]; then
+  if [[ -z $(comm -23 <(sort t2.txt) <(sort t1.txt)) ]]; then
+    # 0 = true
+    echo true
+  else
+    # 1 = false
+    echo false
+  fi
+else
+  # 1 = false
+  echo false
+fi
+
+rm t*.txt
+
+exit
 
