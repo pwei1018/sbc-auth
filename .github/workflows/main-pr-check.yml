@@ -23,8 +23,7 @@ jobs:
         working-directory: .
         run: |
           vaults='[{ "vault": "shared", "application": ["keycloak", "jwt", "email", "nats"]}, {"vault": "relationship","application": ["postgres-auth", "auth-api", "postgres-notify", "notify-api", "sentry"]}]'
-          environments='dev test'
-          ./scripts/1pass_compare.sh ${{ secrets.op_parameters }} -e "${environments}" -v "${vaults}"
+          ./scripts/1pass_compare.sh ${{ secrets.op_parameters }} -e "dev test" -v "${vaults}"
       - uses: pwei1018/bcrs-ci-actions@v1.0.1
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
