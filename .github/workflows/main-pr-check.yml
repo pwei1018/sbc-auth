@@ -26,13 +26,13 @@ jobs:
           ./scripts/1pass_compare.sh ${{ secrets.op_parameters }} -e "dev test" -v "${vaults}"
       - name: print envs
         run: |
-          echo "${{ steps.compare.outputs.approval }}"
-          echo "${{ steps.compare.outputs.message }}"
+          echo "${{ env.approval }}"
+          echo "${{ env.message }}"
       - uses: pwei1018/bcrs-ci-actions@v1.0.1
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-          pr-approval: "${{ steps.compare.outputs.approval }}"
-          pr-message: "${{ steps.compare.outputs.message }}"
+          pr-approval: "${{ env.approval }}"
+          pr-message: "${{ env.message }}"
       - uses: jesusvasquez333/verify-pr-label-action@v1.1.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
