@@ -83,6 +83,7 @@ if [ -z "${SECRET_KEY}" ] || [ -z "${MASTER_PASSWORD}" ] || [ -z "${VAULT}" ]  |
 fi
 
 envs=(${ENVIRONMENTS})
+echo envs
 if [[ ${#envs[@]} != 2 ]]; then
   echo -e \\n"Environments must be two values"\\n
   exit
