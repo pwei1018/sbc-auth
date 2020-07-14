@@ -28,8 +28,8 @@ jobs:
       - uses: pwei1018/bcrs-ci-actions@v1.0.1
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-          pr-approval: "${{ steps.pr.outputs.approval }}"
-          pr-message: "${{ steps.pr.outputs.message }}"
+          pr-approval: "${{ steps.compare.outputs.approval }}"
+          pr-message: "${{ steps.compare.outputs.message }}"
       - uses: jesusvasquez333/verify-pr-label-action@v1.1.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
