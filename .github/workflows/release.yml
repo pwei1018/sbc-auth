@@ -7,10 +7,10 @@ on:
 jobs:
   pre-release:
     runs-on: ubuntu-latest
+    if: "github.event.release.prerelease"
     steps:
       - uses: actions/checkout@v2
       - run: |
           echo $pre-release
         env:
           pre-release: ${{github.event.release.prerelease}}
-          git-context: ${{tojson(github)}}
