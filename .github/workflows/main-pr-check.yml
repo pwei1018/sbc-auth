@@ -10,7 +10,7 @@ on:
 jobs:
   main-repo-pr-check:
     runs-on: ubuntu-latest
-    if: github.repository == 'bcgov/sbc-auth'
+    #if: github.repository == 'bcgov/sbc-auth'
     steps:
       - uses: actions/checkout@v2
       - name: Install tools
