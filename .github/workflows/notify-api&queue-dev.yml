@@ -46,7 +46,7 @@ jobs:
         working-directory: .
         run: |
           vaults='[{ "vault": "shared", "application": ["jwt", "email", "nats"]}, {"vault": "relationship","application": ["postgres-notify", "notify-api", "sentry"]}]'
-          ./scripts/1pass_secret.sh ${{ secrets.op_parameters }} -e "${TAG_NAME}" -v "${vaults}" -a "${IMAGE_NAME}-${TAG_NAME}"
+          ./scripts/1pass.sh ${{ secrets.op_parameters }} -m "secret" -e "${TAG_NAME}" -v "${vaults}" -a "${IMAGE_NAME}-${TAG_NAME}"
       - name: Rollout new deployment
         working-directory: ./notify-api
         run: |
@@ -106,7 +106,7 @@ jobs:
         working-directory: .
         run: |
           vaults='[{ "vault": "shared", "application": ["email", "nats"]}, {"vault": "relationship","application": ["postgres-notify", "notify-api", "notify-queue"]}]'
-          ./scripts/1pass_secret.sh ${{ secrets.op_parameters }} -e "${TAG_NAME}" -v "${vaults}" -a "${IMAGE_NAME}-${TAG_NAME}"
+          ./scripts/1pass.sh ${{ secrets.op_parameters }} -m "secret" -e "${TAG_NAME}" -v "${vaults}" -a "${IMAGE_NAME}-${TAG_NAME}"
       - name: Rollout new deployment
         working-directory: ./queue_services/notify-queue
         run: |
