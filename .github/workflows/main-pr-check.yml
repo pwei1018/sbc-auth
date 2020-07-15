@@ -23,7 +23,7 @@ jobs:
         working-directory: .
         run: |
           vaults='[{ "vault": "shared", "application": ["keycloak", "jwt", "email", "nats"]}, {"vault": "relationship","application": ["postgres-auth", "auth-api", "postgres-notify", "notify-api", "sentry"]}]'
-          ./scripts/1pass_compare.sh ${{ secrets.op_parameters }} -e "dev test" -v "${vaults}"
+          ./scripts/1pass.sh ${{ secrets.op_parameters }} -m "compare" -e "dev test" -v "${vaults}"
       - name: print envs
         run: |
           echo "${{ env.approval }}"
