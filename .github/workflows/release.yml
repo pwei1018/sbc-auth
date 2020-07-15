@@ -10,5 +10,4 @@ jobs:
     if: "!github.event.release.prerelease"
     steps:
       - name: print env1
-          id: compare
-          run:  echo 123
+        run: echo 123
