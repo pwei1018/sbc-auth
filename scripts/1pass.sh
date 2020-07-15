@@ -193,7 +193,7 @@ case  ${METHOD}  in
     if [[ -z ${result} ]]; then
       if [[ -z ${result2} ]]; then
         echo ::set-env name=approval::true
-        echo ::set-env name=message::The vault items in ${ENVIRONMENT} are matched.
+        echo ::set-env name=message::The vault items between ${envs[0]} and ${envs[1]}  are matched.
       else
         echo ::set-env name=approval::false
         echo ::set-env name=message::The following vault items between ${envs[1]} and ${envs[0]} does not match. ${result2}
