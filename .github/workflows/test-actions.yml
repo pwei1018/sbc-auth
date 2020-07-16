@@ -4,10 +4,11 @@ on: push
 
 jobs:
   setup-job:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       matrix:
+        os: [ubuntu-18.04]
         python-version: [3.8]
 
     steps:
