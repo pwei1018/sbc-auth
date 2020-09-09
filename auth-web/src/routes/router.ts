@@ -5,8 +5,11 @@ import AccountChangeSuccessView from '@/views/auth/AccountChangeSuccessView.vue'
 import AccountChangeView from '@/views/auth/AccountChangeView.vue'
 import AccountCreationSuccessView from '@/views/auth/AccountCreationSuccessView.vue'
 import AccountInstructions from '@/components/auth/NonBcscAccounts/AccountInstructions.vue'
+import AccountLoginOptionsChooser from '@/views/auth/AccountLoginOptionsChooser.vue'
+import AccountLoginOptionsInfo from '@/views/auth/AccountLoginOptionsInfo.vue'
 import AccountSetupView from '@/views/auth/AccountSetupView.vue'
 import AffidavitDownload from '@/components/auth/NonBcscAccounts/AffidavitDownload.vue'
+import AuthenticationOptionsView from '@/views/auth/AuthenticationOptionsView.vue'
 import BusinessProfileView from '@/views/auth/BusinessProfileView.vue'
 import ChooseAuthMethodView from '@/views/auth/ChooseAuthMethodView.vue'
 import ConfigHelper from '@/util/config-helper'
@@ -15,6 +18,7 @@ import DashboardView from '@/views/auth/DashboardView.vue'
 import DecideBusinessView from '@/views/auth/DecideBusinessView.vue'
 import DuplicateTeamWarningView from '@/views/auth/DuplicateTeamWarningView.vue'
 import EntityManagement from '@/components/auth/EntityManagement.vue'
+import GLCodesListView from '@/views/auth/staff/GLCodesListView.vue'
 import HomeView from '@/views/auth/HomeView.vue'
 import HomeViewOutdated from '@/views/auth/HomeViewOutdated.vue'
 import IncorpOrRegisterView from '@/views/auth/IncorpOrRegisterView.vue'
@@ -42,10 +46,14 @@ import UnauthorizedView from '@/views/auth/UnauthorizedView.vue'
 import UserProfileView from '@/views/auth/UserProfileView.vue'
 
 function mapReturnPayVars (route: any) {
+  let payResponseUrl = window.location.search
+  if (payResponseUrl && payResponseUrl.charAt(0) === '?') {
+    payResponseUrl = payResponseUrl.substr(1)
+  }
   return {
     paymentId: route.params.paymentId,
     transactionId: route.params.transactionId,
-    receiptNum: !route.query.receipt_number ? '' : route.query.receipt_number
+    payResponseUrl: payResponseUrl
   }
 }
 
@@ -53,15 +61,42 @@ export function getRoutes (): RouteConfig[] {
   const accountSettings = () => import(/* webpackChunkName: "account-settings" */ '../views/auth/AccountSettings.vue')
   const accountInfo = () => import(/* webpackChunkName: "account-settings" */ '../components/auth/AccountInfo.vue')
   const teamManagement = () => import(/* webpackChunkName: "account-settings" */ '../components/auth/TeamManagement.vue')
+  const accountLoginOption = () => import(/* webpackChunkName: "account-settings" */ '../views/auth/AccountSettingsLoginOption.vue')
   const transaction = () => import(/* webpackChunkName: "account-settings" */ '../components/auth/Transactions.vue')
+  const statements = () => import(/* webpackChunkName: "account-settings" */ '../components/auth/Statements.vue')
   const routes = [
     { path: '/', name: 'root', redirect: 'home' },
     {
       path: '/home',
       name: 'home',
-      component: getEnvHomeView(),
-      children: getEnvChildRoutes(),
-      meta: { showNavBar: !ConfigHelper.getLaunchFeatureFlag() }
+      component: HomeView,
+      children: [
+        {
+          path: '',
+          redirect: 'decide-business'
+        },
+        {
+          path: 'decide-business',
+          component: DecideBusinessView,
+          meta: { showNavBar: false }
+        },
+        {
+          path: 'request-name',
+          component: RequestNameView,
+          meta: { showNavBar: false }
+        },
+        {
+          path: 'incorporate-or-register',
+          component: IncorpOrRegisterView,
+          meta: { showNavBar: false }
+        },
+        {
+          path: 'maintain-business',
+          component: MaintainBusinessView,
+          meta: { showNavBar: false }
+        }
+      ],
+      meta: { showNavBar: false }
     },
     {
       path: '/business',
@@ -108,9 +143,22 @@ export function getRoutes (): RouteConfig[] {
           component: teamManagement
         },
         {
+          path: 'login-option',
+          name: 'login-option',
+          component: accountLoginOption
+        },
+        {
           path: 'transactions',
           name: 'transactions',
           component: transaction,
+          meta: {
+            isPremiumOnly: true
+          }
+        },
+        {
+          path: 'statements',
+          name: 'statements',
+          component: statements,
           meta: {
             isPremiumOnly: true
           }
@@ -174,7 +222,7 @@ export function getRoutes (): RouteConfig[] {
       path: '/review-account/:orgId',
       name: 'review-account',
       component: ReviewAccountView,
-      meta: { requiresAuth: true, disabledRoles: [Role.Basic, Role.Public] },
+      meta: { requiresAuth: true, allowedRoles: [Role.StaffManageAccounts] },
       props: true
     },
     {
@@ -198,6 +246,24 @@ export function getRoutes (): RouteConfig[] {
       props: true
     },
     {
+      path: '/account-login-options-chooser',
+      component: AccountLoginOptionsChooser,
+      meta: { requiresAuth: true, requiresProfile: true },
+      props: true
+    },
+    {
+      path: '/account-login-options-info',
+      component: AccountLoginOptionsInfo,
+      meta: { requiresAuth: true, requiresProfile: true },
+      props: true
+    },
+    {
+      path: '/authentication-options',
+      component: AuthenticationOptionsView,
+      meta: { requiresAuth: false },
+      props: true
+    },
+    {
       path: '/createaccount',
       name: 'createaccount',
       component: CreateAccountView,
@@ -213,9 +279,8 @@ export function getRoutes (): RouteConfig[] {
     {
       path: '/validatetoken/:token',
       name: 'validatetoken',
-      component: AcceptInviteLandingView,
-      props: true,
-      meta: { requiresAuth: false, disabledRoles: [Role.Staff] }
+      // to handle old invitation; removable this after a month of this release
+      redirect: '/undefined/validatetoken/BCSC/:token'
     },
     {
       path: '/confirmtoken/:token',
@@ -225,20 +290,22 @@ export function getRoutes (): RouteConfig[] {
       meta: { requiresAuth: true, disabledRoles: [Role.Staff] }
     },
     {
+      // to handle old invitation; removable this after a month of this release
       path: '/:orgName/dirsearch/validatetoken/:token',
       name: 'createuserprofile',
+      redirect: '/:orgName/validatetoken/BCROS/:token'
+    },
+    {
+      path: '/:orgName/validatetoken/:loginSource/:token',
       component: AcceptInviteLandingView,
       props: true,
       meta: { requiresAuth: false }
     },
-    {
-      path: '/dirsearch/confirmtoken/:token',
-      name: 'dirsearch-confirmtoken',
-      component: AcceptInviteView,
+    { path: '/signin/:idpHint',
+      name: 'signin',
+      component: SigninView,
       props: true,
-      meta: { requiresAuth: true }
-    },
-    { path: '/signin/:idpHint', name: 'signin', component: SigninView, props: true, meta: { requiresAuth: false } },
+      meta: { requiresAuth: false } },
     {
       path: '/signin/:idpHint/:redirectUrl',
       name: 'signin-redirect',
@@ -296,6 +363,13 @@ export function getRoutes (): RouteConfig[] {
       meta: { requiresAuth: true, allowedRoles: [Role.Staff] }
     },
     {
+      path: '/glcodelist',
+      name: 'glcodelist',
+      component: GLCodesListView,
+      props: true,
+      meta: { requiresAuth: true, allowedRoles: [Role.Staff] }
+    },
+    {
       path: '/unauthorized',
       name: 'unauthorized',
       component: UnauthorizedView,
@@ -310,7 +384,7 @@ export function getRoutes (): RouteConfig[] {
       meta: { requiresAuth: true }
     },
     {
-      path: '/pendingapproval/:team_name?',
+      path: '/pendingapproval/:teamName?/:pendingAffidavit?',
       name: 'pendingapproval',
       component: PendingApprovalView,
       props: true,
@@ -348,40 +422,4 @@ export function getRoutes (): RouteConfig[] {
   ]
 
   return routes
-}
-
-// Get the HomeView depending on environment
-const getEnvHomeView = () => {
-  return ConfigHelper.getLaunchFeatureFlag() ? HomeView : HomeViewOutdated
-}
-
-// Get the child routes depending on environment
-const getEnvChildRoutes = () => {
-  return ConfigHelper.getLaunchFeatureFlag() ? [
-    {
-      path: '',
-      redirect: 'decide-business'
-    },
-    {
-      path: 'decide-business',
-      component: DecideBusinessView,
-      meta: { showNavBar: false }
-    },
-    {
-      path: 'request-name',
-      component: RequestNameView,
-      meta: { showNavBar: false }
-    },
-    {
-      path: 'incorporate-or-register',
-      component: IncorpOrRegisterView,
-      meta: { showNavBar: false }
-    },
-    {
-      path: 'maintain-business',
-      component: MaintainBusinessView,
-      meta: { showNavBar: false }
-    }
-  ]
-    : []
 }

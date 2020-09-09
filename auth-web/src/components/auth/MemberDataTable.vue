@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     v-if="roleInfos"
-    class="user-list"
+    :mobile-breakpoint="1024"
     :headers="headerMembers"
     :items="indexedOrgMembers"
     :items-per-page="5"
@@ -12,27 +12,32 @@
     <template v-slot:loading>
       Loading...
     </template>
+
+    <!-- Name Column Template -->
     <template v-slot:item.name="{ item }">
-      <v-list-item-title
-        class="user-name"
+      <div
+        class="user-name font-weight-bold"
         :data-test="getIndexedTag('user-name', item.index)"
-        >{{ item.user.firstname }} {{ item.user.lastname }}</v-list-item-title
-      >
-      <v-list-item-subtitle
+        >
+          {{ item.user.firstname }} {{ item.user.lastname }}
+      </div>
+      <div
         :data-test="getIndexedTag('business-id', item.index)"
         v-if="item.user.contacts && item.user.contacts.length > 0"
-        >{{ item.user.contacts[0].email }}</v-list-item-subtitle
-      >
+        >
+          {{ item.user.contacts[0].email }}
+      </div>
     </template>
+
+    <!-- Role Column Template -->
     <template v-slot:item.role="{ item }">
       <v-menu>
         <template v-slot:activator="{ on }">
           <v-btn
-            small
             text
-            :disabled="!canChangeRole(item)"
-            class="role-selector"
+            class="ml-n4 pr-2"
             v-on="on"
+            :disabled="!canChangeRole(item)"
             :data-test="getIndexedTag('role-selector', item.index)"
           >
             {{ item.roleDisplayName }}
@@ -51,7 +56,7 @@
                   ? confirmChangeRole(item, role.name)
                   : ''
               "
-              :disabled="!isRoleEnabled(role)"
+              :disabled="!isRoleEnabled(role, item)"
               v-bind:class="{
                 'primary--text v-item--active v-list-item--active':
                   item.membershipTypeCode.toUpperCase() ===
@@ -79,49 +84,55 @@
         </v-list>
       </v-menu>
     </template>
+
+    <!-- Date Column Template -->
     <template
       v-slot:item.lastActive="{ item }"
       :data-test="getIndexedTag('last-active', item.index)"
     >
       {{ formatDate(item.user.modified) }}
     </template>
+
+    <!-- Actions Column Template -->
     <template v-slot:item.action="{ item }">
       <div class="btn-inline">
-      <v-btn
-              :data-test="getIndexedTag('reset-password-button', item.index)"
-              v-can:RESET_PASSWORD.hide
-              v-show="anonAccount"
-              depressed
-              class="mr-2"
-              small
-              @click="resetPassword(item)"
-      >Reset Password</v-btn
-      >
-      <v-btn
-        :data-test="getIndexedTag('remove-user-button', item.index)"
-        v-show="canRemove(item)"
-        depressed
-        small
-        @click="confirmRemoveMember(item)"
-        >Remove</v-btn
-      >
-      <v-btn
-        :data-test="getIndexedTag('leave-team-button', item.index)"
-        v-show="canLeave(item)"
-        depressed
-        small
-        @click="confirmLeaveTeam(item)"
-      >
-        <span v-if="!canDissolve()">Leave</span>
-        <span v-if="canDissolve()">Dissolve</span>
-      </v-btn>
+        <v-btn
+          outlined
+          color="primary"
+          class="mr-1"
+          :data-test="getIndexedTag('reset-password-button', item.index)"
+          v-can:RESET_PASSWORD.hide
+          v-show="anonAccount"
+          @click="resetPassword(item)"
+        >
+          Reset Password
+        </v-btn>
+        <v-btn
+          outlined
+          color="primary"
+          :data-test="getIndexedTag('remove-user-button', item.index)"
+          v-show="canRemove(item)"
+          @click="confirmRemoveMember(item)"
+        >
+          Remove
+        </v-btn>
+        <v-btn
+          outlined
+          color="primary"
+          :data-test="getIndexedTag('leave-team-button', item.index)"
+          v-show="canLeave(item)"
+          @click="confirmLeaveTeam(item)"
+        >
+          <span v-if="!canDissolve()">Leave</span>
+          <span v-if="canDissolve()">Dissolve</span>
+        </v-btn>
       </div>
     </template>
   </v-data-table>
 </template>
 
 <script lang="ts">
-import { AccessType, Account } from '@/util/constants'
+import { AccessType, Account, LoginSource } from '@/util/constants'
 import { Component, Emit, Vue } from 'vue-property-decorator'
 import {
   Member,
@@ -169,13 +180,13 @@ export default class MemberDataTable extends Vue {
       value: 'name'
     },
     {
-      text: 'Roles',
+      text: 'Role',
       align: 'left',
       sortable: true,
       value: 'role'
     },
     {
-      text: 'Last Active',
+      text: 'Last Activity',
       align: 'left',
       sortable: true,
       value: 'lastActive'
@@ -185,7 +196,7 @@ export default class MemberDataTable extends Vue {
       align: 'left',
       value: 'action',
       sortable: false,
-      width: '80'
+      width: '120'
     }
   ]
 
@@ -216,7 +227,11 @@ export default class MemberDataTable extends Vue {
     }))
   }
 
-  private isRoleEnabled (role: RoleInfo): boolean {
+  private isRoleEnabled (role: RoleInfo, member: Member): boolean {
+    // BCeID delegates cannot be upgraded to admins
+    if ((member?.user?.loginSource === LoginSource.BCEID) && (role.name === MembershipType.Admin)) {
+      return false
+    }
     switch (this.currentMembership.membershipTypeCode) {
       case MembershipType.Admin:
         return true
@@ -267,7 +282,7 @@ export default class MemberDataTable extends Vue {
 
   private canRemove (memberToRemove: Member): boolean {
     // Can't remove yourself
-    if (this.currentMembership.user.username === memberToRemove.user.username) {
+    if (this.currentMembership.user?.username === memberToRemove.user.username) {
       return false
     }
 
@@ -293,7 +308,7 @@ export default class MemberDataTable extends Vue {
   }
 
   private canLeave (member: Member): boolean {
-    if (this.currentMembership.user.username !== member.user.username) {
+    if (this.currentMembership.user?.username !== member.user.username) {
       return false
     }
     return true
@@ -400,7 +415,13 @@ export default class MemberDataTable extends Vue {
 </script>
 
 <style lang="scss" scoped>
-@import '$assets/scss/theme.scss';
+::v-deep {
+  td {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    height: auto;
+  }
+}
 
 .v-list--dense {
   .v-list-item .v-list-item__title {
@@ -411,9 +432,6 @@ export default class MemberDataTable extends Vue {
 
 .role-list {
   width: 20rem;
-}
-.btn-inline {
-  white-space: nowrap;
 }
 
 .user-role-desc {

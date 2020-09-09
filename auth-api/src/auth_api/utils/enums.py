@@ -61,6 +61,7 @@ class PaymentType(Enum):
 
     CREDIT_CARD = 'CC'
     BCOL = 'DRAWDOWN'
+    DIRECT_PAY = 'DIRECT_PAY'
 
 
 class OrgType(Enum):
@@ -139,6 +140,7 @@ class OrgStatus(Enum):
     INACTIVE = 'INACTIVE'
     PENDING_AFFIDAVIT_REVIEW = 'PENDING_AFFIDAVIT_REVIEW'
     REJECTED = 'REJECTED'
+    PENDING_ACTIVATION = 'PENDING_ACTIVATION'
 
 
 class InvitationType(Enum):
@@ -152,6 +154,7 @@ class IdpHint(Enum):
     """IdpHint for user login."""
 
     BCROS = 'bcros'
+    BCEID = 'bceid'
 
 
 class InvitationStatus(Enum):

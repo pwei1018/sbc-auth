@@ -14,6 +14,7 @@ usage() {
                       -e <environment(s)>
                       -v <vaultDetails>
                       -a <appName>
+                      -n <namespace>
 
   OPTIONS:
   ========
@@ -28,6 +29,7 @@ usage() {
         compare - compare two environments vault values
     -e The environment(s) of the vault, for example pytest/dev/test/prod or "dev test".
     -a Openshift application name, for example: auth-api-dev
+    -n Openshift namespace name, for example: 1rdehl-dev
     -v A list of vault and application name of the 1password account, for example:
        [
           {
@@ -54,7 +56,7 @@ exit
 # -----------------------------------------------------------------------------------------------------------------
 # Initialization:
 # -----------------------------------------------------------------------------------------------------------------
-while getopts h:a:d:u:k:p:v:m:e: FLAG; do
+while getopts h:a:d:u:k:p:v:m:e:n: FLAG; do
   case $FLAG in
     h ) usage ;;
     a ) APP_NAME=$OPTARG ;;
@@ -65,6 +67,7 @@ while getopts h:a:d:u:k:p:v:m:e: FLAG; do
     v ) VAULT=$OPTARG ;;
     m ) METHOD=$OPTARG ;;
     e ) ENVIRONMENT=$OPTARG ;;
+    n ) NAMESPACE=$OPTARG ;;
     \? ) #unrecognized option - show help
       echo -e \\n"Invalid script option: -${OPTARG}"\\n
       usage
@@ -117,6 +120,11 @@ if [[ " secret " =~ " ${METHOD} " ]]; then
   if [[ -z "${APP_NAME}" ]]; then
     echo -e \\n"Missing parameters - application name"\\n
     usage
+  else
+    if [[ -z "${NAMESPACE}" ]]; then
+      echo -e \\n"Missing parameters - namespace"\\n
+      usage
+    fi
   fi
 fi
 
@@ -128,7 +136,7 @@ eval $(echo "${MASTER_PASSWORD}" | op signin ${DOMAIN_NAME} ${USERNAME} ${SECRET
 
 if [[ " secret " =~ " ${METHOD} " ]]; then
   # create application secrets
-  oc create secret generic ${APP_NAME}-secret > /dev/null 2>&1 &
+  oc create secret generic ${APP_NAME}-secret -n ${NAMESPACE} > /dev/null 2>&1 &
 fi
 
 num=0
@@ -161,7 +169,7 @@ for env_name in "${envs[@]}"; do
               secret_json=$(oc create secret generic ${APP_NAME}-secret --from-literal="$(_envvars '.t')=$(_envvars '.v')" --dry-run -o json)
 
               # Set secret key and value from 1password
-              oc get secret ${APP_NAME}-secret -o json \
+              oc get secret ${APP_NAME}-secret -n ${NAMESPACE} -o json \
                 | jq ". * $secret_json" \
                 | oc apply -f -
               ;;
@@ -184,7 +192,7 @@ done
 case  ${METHOD}  in
   secret)
     # Set environment variable of deployment config
-    oc set env dc/${APP_NAME} --overwrite --from=secret/${APP_NAME}-secret --containers=${APP_NAME} ENV-  > /dev/null 2>&1 &
+    oc set env dc/${APP_NAME} -n ${NAMESPACE} --overwrite --from=secret/${APP_NAME}-secret --containers=${APP_NAME} ENV-  > /dev/null 2>&1 &
     ;;
   compare)
     # Compare txt file and write the result into github actions environment

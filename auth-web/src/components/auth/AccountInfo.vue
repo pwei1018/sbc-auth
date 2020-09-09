@@ -1,101 +1,140 @@
 <template>
   <v-container class="pa-0">
-    <header class="view-header mb-10">
-      <h2 class="view-header__title">Account Information</h2>
+    <header class="view-header mb-9">
+      <h2 class="view-header__title">Account Info</h2>
     </header>
-    <v-form ref="editAccountForm">
-      <v-alert type="error" class="mb-6" v-show="errorMessage">
-        {{ errorMessage }}
-      </v-alert>
-      <ul class="nv-list" v-show="!anonAccount">
-        <li class="nv-list-item mb-10">
-          <div class="name" id="accountType">Account Type</div>
-          <div class="value" aria-labelledby="accountType">
-            <div class="value__title">{{ isPremiumAccount ? 'Premium' : 'Basic' }}</div>
-            <div v-can:CHANGE_ACCOUNT_TYPE.hide>
-              <router-link :to="editAccountUrl" v-can:CHANGE_ACCOUNT_TYPE.hide >Change account type</router-link>
+    <div>
+      <v-form ref="editAccountForm">
+        <v-alert type="error" class="mb-6" v-show="errorMessage">
+          {{ errorMessage }}
+        </v-alert>
+
+        <div v-can:VIEW_ACCOUNT.hide>
+          <div class="nv-list-item mb-10">
+            <div class="name" id="accountName">Account Name</div>
+            <div class="value" aria-labelledby="accountName">
+              <div class="value__title">{{ currentOrganization.name }}</div>
             </div>
           </div>
-        </li>
-        <li class="nv-list-item mb-12" v-if="isPremiumAccount">
-          <div class="name mb-3" id="accountName">Linked BC Online Account Details</div>
-          <v-alert dark color="primary" class="bcol-acc px-7 py-5">
-            <div class="bcol-acc__name">
-              {{ currentOrganization.name }}
+          <div class="nv-list-item mb-10">
+            <div class="name" id="accountStatus">Status</div>
+            <div class="value" aria-labelledby="accountStatus">
+              <div class="value__title">{{ currentOrganization.orgStatus }}</div>
             </div>
-            <ul class="bcol-acc__meta" v-if="isPremiumAccount && currentOrgPaymentSettings">
-              <li>
-                BC Online Account No: {{currentOrgPaymentSettings.bcolAccountId}}
-              </li>
-              <li>
-                Prime Contact ID: {{currentOrgPaymentSettings.bcolUserId}}
-              </li>
-            </ul>
-          </v-alert>
-        </li>
-      </ul>
+          </div>
+        </div>
 
-      <fieldset v-if="!isPremiumAccount">
-        <legend class="mb-4">Account Details</legend>
-        <v-text-field
-          filled
-          clearable
-          required
-          label="Account Name"
-          :rules="accountNameRules"
-          v-can:CHANGE_ORG_NAME.disable
-          :disabled="!canChangeAccountName()"
-          v-if="!isPremiumAccount"
-          v-model="orgName"
-          v-on:keydown="enableBtn()"
-        >
-        </v-text-field>
-      </fieldset>
-      <template v-if="isPremiumAccount && currentOrgAddress">
-        <h4 class="mb-4">Mailing Address</h4>
-        <BaseAddress
-                :inputAddress="currentOrgAddress"
-                @key-down="keyDown()"
-                @address-update="updateAddress"
-                @is-form-valid="checkBaseAddressValidity"
-                v-can:CHANGE_ADDRESS.disable
-                :key="addressKey"
-        >
-        </BaseAddress>
-      </template>
+        <template v-show="!anonAccount">
+          <div class="nv-list-item mb-10">
+            <div class="name" id="accountType">Account Type</div>
+            <div class="value" aria-labelledby="accountType">
+              <div class="value__title">{{ isPremiumAccount ? 'Premium' : 'Basic' }}</div>
+              <div v-can:CHANGE_ACCOUNT_TYPE.hide>
+                <router-link :to="editAccountUrl" v-can:CHANGE_ACCOUNT_TYPE.hide >Change account type</router-link>
+              </div>
+            </div>
+          </div>
+          <div class="nv-list-item mb-6" v-if="isPremiumAccount">
+            <div class="name mt-3" id="accountName">Linked BC Online Account Details</div>
+            <div class="value">
+              <v-alert dark color="primary" class="py-3 px-4">
+                <div class="font-weight-bold">
+                  {{ currentOrganization.name }}
+                </div>
+                <ul class="bcol-acc__meta" v-if="isPremiumAccount && currentOrgPaymentSettings">
+                  <li>
+                    BC Online Account No: {{currentOrgPaymentSettings.bcolAccountId}}
+                  </li>
+                  <li>
+                    Prime Contact ID: {{currentOrgPaymentSettings.bcolUserId}}
+                  </li>
+                </ul>
+              </v-alert>
+            </div>
+          </div>
+        </template>
 
-      <v-divider class="mt-3 mb-10"></v-divider>
+        <div class="nv-list-item mb-10" v-can:VIEW_ADMIN_CONTACT.hide>
+          <div class="name" id="adminContact">Account Contact</div>
+          <div class="value" aria-labelledby="adminContact">
+            <OrgAdminContact></OrgAdminContact>
+          </div>
+        </div>
 
-      <div class="form__btns">
-        <v-btn
-          large
-          class="save-btn"
-          v-bind:class="{ disabled: btnLabel == 'Saved' }"
-          :color="btnLabel == 'Saved' ? 'success' : 'primary'"
-          :disabled="!isSaveEnabled()"
-          :loading="btnLabel == 'Saving'"
-          @click="updateDetails()"
-        >
-          <v-expand-x-transition>
-            <v-icon v-show="btnLabel == 'Saved'">mdi-check</v-icon>
-          </v-expand-x-transition>
-          <span class="save-btn__label">{{ btnLabel }}</span>
-        </v-btn>
-        <v-btn
-          large
-          depressed
-          class="ml-2"
-          color="default"
-          @click="resetForm"
-          data-test="reset-button"
-        >Reset</v-btn>
-      </div>
-    </v-form>
+        <div class="nv-list-item" v-if="!isPremiumAccount" v-can:CHANGE_ORG_NAME.hide>
+          <div class="name">
+            Account Details
+          </div>
+          <div class="value">
+            <v-text-field
+            filled
+            clearable
+            required
+            label="Account Name"
+            :rules="accountNameRules"
+            v-can:CHANGE_ORG_NAME.disable
+            :disabled="!canChangeAccountName()"
+            v-if="!isPremiumAccount"
+            v-model="orgName"
+            v-on:keydown="enableBtn()"
+            >
+            </v-text-field>
+          </div>
+        </div>
+
+        <div class="nv-list-item" v-if="(isAddressEditable || isAddressViewable)">
+          <!-- template warpper is required here inorder to keep the placement of divs correctly(to resolve flickering issue when updating the address) -->
+          <template v-if="baseAddress">
+            <div class="name">
+              Mailing Address
+            </div>
+            <div class="value">
+              <base-address-form
+                ref="mailingAddress"
+                :editing="isBaseAddressEditMode"
+                :schema="baseAddressSchema"
+                :address="baseAddress"
+                @update:address="updateAddress"
+                @valid="checkBaseAddressValidity"
+              />
+            </div>
+          </template>
+        </div>
+
+        <div v-if="editEnabled">
+          <v-divider class="mt-3 mb-10"></v-divider>
+          <div class="form__btns">
+            <v-btn
+              large
+              class="save-btn"
+              v-bind:class="{ disabled: btnLabel == 'Saved' }"
+              :color="btnLabel == 'Saved' ? 'success' : 'primary'"
+              :disabled="!isSaveEnabled()"
+              :loading="btnLabel == 'Saving'"
+              @click="updateDetails()"
+            >
+              <v-expand-x-transition>
+                <v-icon v-show="btnLabel == 'Saved'">mdi-check</v-icon>
+              </v-expand-x-transition>
+              <span class="save-btn__label">{{ btnLabel }}</span>
+            </v-btn>
+            <v-btn
+              large
+              depressed
+              class="ml-2"
+              color="default"
+              @click="resetForm"
+              data-test="reset-button"
+            >Reset</v-btn>
+          </div>
+        </div>
+      </v-form>
+    </div>
   </v-container>
 </template>
 
 <script lang="ts">
-import { AccessType, Account, Pages, SessionStorageKeys } from '@/util/constants'
+import { AccessType, Account, Pages, Permission, SessionStorageKeys } from '@/util/constants'
 import { Component, Mixins, Vue, Watch } from 'vue-property-decorator'
 import {
   CreateRequestBody,
@@ -107,22 +146,26 @@ import { mapActions, mapMutations, mapState } from 'vuex'
 import AccountChangeMixin from '@/components/auth/mixins/AccountChangeMixin.vue'
 import { AccountSettings } from '@/models/account-settings'
 import { Address } from '@/models/address'
-import BaseAddress from '@/components/auth/BaseAddress.vue'
+import BaseAddressForm from '@/components/auth/common/BaseAddressForm.vue'
 import ConfigHelper from '@/util/config-helper'
+import OrgAdminContact from '@/components/auth/OrgAdminContact.vue'
 import OrgModule from '@/store/modules/org'
 import { PaymentSettings } from '@/models/PaymentSettings'
+import { addressSchema } from '@/schemas'
 import { getModule } from 'vuex-module-decorators'
 
 @Component({
   components: {
-    BaseAddress
+    BaseAddressForm,
+    OrgAdminContact
   },
   computed: {
     ...mapState('org', [
       'currentOrganization',
       'currentMembership',
       'currentOrgAddress',
-      'currentOrgPaymentSettings'
+      'currentOrgPaymentSettings',
+      'permissions'
     ])
   },
   methods: {
@@ -130,13 +173,15 @@ import { getModule } from 'vuex-module-decorators'
     ...mapMutations('org', ['setCurrentOrganizationAddress'])
   }
 })
-export default class AccountInfo extends Mixins(AccountChangeMixin) {
+export default class AccountInfoEdit extends Mixins(AccountChangeMixin) {
   private orgStore = getModule(OrgModule, this.$store)
   private btnLabel = 'Save'
   private readonly currentOrganization!: Organization
   private readonly currentOrgAddress!: Address
   private readonly currentOrgPaymentSettings!: PaymentSettings
   private readonly currentMembership!: Member
+  private readonly permissions!: string[]
+
   private readonly updateOrg!: (
     requestBody: CreateRequestBody
   ) => Promise<Organization>
@@ -148,12 +193,10 @@ export default class AccountInfo extends Mixins(AccountChangeMixin) {
   private readonly setCurrentOrganizationAddress!: (address: Address) => void
   private isBaseAddressValid: boolean = false
 
+  private baseAddressSchema: {} = addressSchema
+
   private isFormValid (): boolean {
     return !!this.orgName || this.orgName === this.currentOrganization?.name
-  }
-
-  get addressKey () {
-    return JSON.stringify(this.currentOrgAddress)
   }
 
   get editAccountUrl () {
@@ -164,11 +207,19 @@ export default class AccountInfo extends Mixins(AccountChangeMixin) {
     const accountSettings = this.getAccountFromSession()
     await this.syncOrganization(accountSettings.id)
     this.setAccountChangedHandler(this.setup)
-    this.setup()
+    await this.setup()
   }
 
   private keyDown (address: Address) {
     this.enableBtn()
+  }
+
+  private get baseAddress () {
+    return this.currentOrgAddress
+  }
+
+  private set baseAddress (address) {
+    this.setCurrentOrganizationAddress(address)
   }
 
   private updateAddress (address: Address) {
@@ -182,6 +233,9 @@ export default class AccountInfo extends Mixins(AccountChangeMixin) {
     if (this.isPremiumAccount) {
       await this.syncPaymentSettings(accountSettings.id)
       await this.syncAddress()
+    } else {
+      // inorder to hide the address if not premium account
+      this.baseAddress = null
     }
   }
 
@@ -237,7 +291,7 @@ export default class AccountInfo extends Mixins(AccountChangeMixin) {
       name: this.orgName
     }
     if (this.isPremiumAccount) {
-      createRequestBody.mailingAddress = this.currentOrgAddress
+      createRequestBody.mailingAddress = { ...this.baseAddress }
     }
     try {
       await this.updateOrg(createRequestBody)
@@ -267,6 +321,27 @@ export default class AccountInfo extends Mixins(AccountChangeMixin) {
   private checkBaseAddressValidity (isValid) {
     this.isBaseAddressValid = !!isValid
   }
+
+  get editEnabled () : boolean {
+    return [Permission.CHANGE_ADDRESS, Permission.CHANGE_ORG_NAME].some(per => this.permissions.includes(per))
+  }
+
+  get isAddressEditable () : boolean {
+    return [Permission.CHANGE_ADDRESS].some(per => this.permissions.includes(per))
+  }
+
+  get isAddressViewable () : boolean {
+    return [Permission.VIEW_ADDRESS].some(per => this.permissions.includes(per))
+  }
+
+  get isBaseAddressEditMode () : boolean {
+    if (this.isAddressEditable) {
+      return true
+    } else if (this.isAddressViewable) {
+      return false
+    }
+    return false
+  }
 }
 </script>
 
@@ -284,6 +359,7 @@ export default class AccountInfo extends Mixins(AccountChangeMixin) {
 }
 
 .nv-list-item {
+  display: flex;
   vertical-align: top;
 
   .name, .value {
@@ -292,8 +368,12 @@ export default class AccountInfo extends Mixins(AccountChangeMixin) {
   }
 
   .name {
-    min-width: 10rem;
-    font-weight: 700;
+    flex: 0 0 auto;
+    width: 12rem;
+  }
+
+  .value {
+    flex: 1 1 auto;
   }
 }
 

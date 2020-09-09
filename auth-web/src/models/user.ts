@@ -7,7 +7,9 @@ export interface User {
     modified?: Date
     userTerms?: UserTerms
     contacts?: Contact[]
-    email?: string
+    email?: string,
+    loginSource?: string
+    id?: number
 }
 
 export interface UserTerms {

@@ -36,7 +36,7 @@ from auth_api.services.authorization import check_auth
 from auth_api.services.keycloak_user import KeycloakUser
 from auth_api.utils import util
 from auth_api.utils.enums import AccessType, DocumentType, IdpHint, LoginSource, OrgStatus, Status, UserStatus
-from auth_api.utils.roles import ADMIN, CLIENT_ADMIN_ROLES, COORDINATOR, STAFF
+from auth_api.utils.roles import ADMIN, CLIENT_ADMIN_ROLES, COORDINATOR, STAFF, Role
 from auth_api.utils.util import camelback2snake
 
 from .contact import Contact as ContactService
@@ -159,7 +159,7 @@ class User:  # pylint: disable=too-many-instance-attributes
             if len(memberships) > 1 or memberships[0].get('membershipType') not in [ADMIN, COORDINATOR]:
                 raise BusinessException(Error.INVALID_USER_CREDENTIALS, None)
         else:
-            check_auth(org_id=org_id, token_info=token_info, one_of_roles=(COORDINATOR, ADMIN))
+            check_auth(org_id=org_id, token_info=token_info, one_of_roles=(COORDINATOR, ADMIN, STAFF))
         # check if anonymous org ;these actions cannot be performed on normal orgs
         org = OrgModel.find_by_org_id(org_id)
         if not org or org.access_type != AccessType.ANONYMOUS.value:
@@ -230,7 +230,7 @@ class User:  # pylint: disable=too-many-instance-attributes
         if admin_user_membership.membership_type_code in [ADMIN]:
             is_valid_action = True
         # staff admin deleteion
-        is_staff_admin = token_info and 'staff_admin' in token_info.get('realm_access').get('roles')
+        is_staff_admin = token_info and Role.STAFF_CREATE_ACCOUNTS.value in token_info.get('realm_access').get('roles')
         if is_staff_admin:
             is_valid_action = True
         # self deletion
@@ -270,6 +270,8 @@ class User:  # pylint: disable=too-many-instance-attributes
         current_app.logger.debug('save_from_jwt_token')
         if not token:
             return None
+        request_json = {} if not request_json else request_json
+
         is_anonymous_user = token.get('accessType', None) == AccessType.ANONYMOUS.value
         if not is_anonymous_user:
             existing_user = UserModel.find_by_jwt_token(token)
@@ -281,7 +283,8 @@ class User:  # pylint: disable=too-many-instance-attributes
         if existing_user is None:
             user_model = UserModel.create_from_jwt_token(token, first_name, last_name)
         else:
-            user_model = UserModel.update_from_jwt_token(existing_user, token, first_name, last_name)
+            user_model = UserModel.update_from_jwt_token(existing_user, token, first_name, last_name,
+                                                         is_login=request_json.get('isLogin', False))
 
         if not user_model:
             return None
@@ -303,7 +306,6 @@ class User:  # pylint: disable=too-many-instance-attributes
     def _get_names(existing_user, request_json, token):
         # For BCeID, IDIM doesn't want to use the names from token
         if token.get('loginSource', None) == LoginSource.BCEID.value:
-            request_json = {} if not request_json else request_json
             first_name: str = request_json.get('firstName', existing_user.firstname) if existing_user \
                 else request_json.get('firstName', None)
             last_name: str = request_json.get('lastName', existing_user.lastname) if existing_user \
@@ -346,13 +348,11 @@ class User:  # pylint: disable=too-many-instance-attributes
 
         contact = ContactModel(**camelback2snake(contact_info))
         contact = contact.flush()
-        contact.commit()
 
         contact_link = ContactLinkModel()
         contact_link.user = user
         contact_link.contact = contact
-        contact_link = contact_link.flush()
-        contact_link.commit()
+        contact_link.save()
 
         return ContactService(contact)
 
@@ -373,8 +373,7 @@ class User:  # pylint: disable=too-many-instance-attributes
 
         contact = contact_link.contact
         contact.update_from_dict(**camelback2snake(contact_info))
-        contact = contact.flush()
-        contact.commit()
+        contact = contact.save()
 
         # return the updated contact
         return ContactService(contact)

@@ -1,0 +1,40 @@
+name: API CD
+
+on:
+  push:
+    branches:
+      - development
+      - master
+    paths:
+      - "auth-api/**"
+  workflow_dispatch:
+    inputs:
+      environement:
+        description: "Environment (dev/test/prod)"
+        required: true
+        default: "dev"
+
+env:
+  IMAGE_NAME: auth-api
+
+jobs:
+  api-cd:
+    runs-on: ubuntu-latest
+    #if: github.repository == 'bcgov/sbc-auth'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set env to dev
+        if: github.ref == 'refs/heads/development' || github.event.inputs.environement == 'dev'
+        run: |
+          echo "::set-env name=TAG_NAME::dev"
+      - name: Set env to test
+        if: github.ref == 'refs/heads/master' || github.event.inputs.environement == 'test'
+        run: |
+          echo "::set-env name=TAG_NAME::test"
+      - name: Set env to prod
+        if: github.ref == 'refs/heads/master' && github.event.inputs.environement == 'prod'
+        run: |
+          echo "::set-env name=TAG_NAME::prod"
+      - name: print env
+        run: |
+          echo $TAG_NAME

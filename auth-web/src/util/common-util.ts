@@ -1,6 +1,8 @@
 /**
  * Place to put all the custom utility methods
  */
+import { Address, BaseAddressModel } from '@/models/address'
+import { Permission } from '@/util/constants'
 import moment from 'moment'
 
 export default class CommonUtils {
@@ -51,7 +53,7 @@ export default class CommonUtils {
 
   // Formatting date in the desired format for displaying in the template
   static formatDisplayDate (date: Date, format?: string) {
-    return moment(date).format(format || 'MM-DD-YYYY')
+    return (date) ? moment(date).format(format || 'MM-DD-YYYY') : ''
   }
 
   // Formatting date in the desired format for vue date pickers
@@ -97,5 +99,51 @@ export default class CommonUtils {
   static isSigningOut ():boolean {
     const path = window.location.pathname
     return path.includes('/signout')
+  }
+
+  static getAdminPermissions (): string[] {
+    return [
+      Permission.REMOVE_BUSINESS,
+      Permission.CHANGE_ADDRESS,
+      Permission.CHANGE_ORG_NAME,
+      Permission.INVITE_MEMBERS,
+      Permission.CHANGE_ACCOUNT_TYPE,
+      Permission.CHANGE_ROLE,
+      Permission.RESET_PASSWORD,
+      Permission.TRANSACTION_HISTORY,
+      Permission.MANAGE_STATEMENTS,
+      Permission.VIEW_ADMIN_CONTACT
+    ]
+  }
+  static getViewOnlyPermissions (): string[] {
+    return [
+      Permission.VIEW_ACCOUNT,
+      Permission.VIEW_ADDRESS,
+      Permission.VIEW_ADMIN_CONTACT
+    ]
+  }
+  // for converting address object of sbc-auth to as needed for BaseAddress component
+  static convertAddressForComponent (address: Address) : BaseAddressModel {
+    return {
+      addressCity: address.city,
+      addressCountry: address.country,
+      addressRegion: address.region,
+      deliveryInstructions: address.deliveryInstructions,
+      postalCode: address.postalCode,
+      streetAddress: address.street,
+      streetAddressAdditional: address.streetAdditional
+    }
+  }
+  // for converting address object of BaseAddress component to as needed for sbc-auth
+  static convertAddressForAuth (iaddress: BaseAddressModel) : Address {
+    return {
+      city: iaddress.addressCity,
+      country: iaddress.addressCountry,
+      region: iaddress.addressRegion,
+      deliveryInstructions: iaddress.deliveryInstructions,
+      postalCode: iaddress.postalCode,
+      street: iaddress.streetAddress,
+      streetAdditional: iaddress.streetAddressAdditional
+    }
   }
 }

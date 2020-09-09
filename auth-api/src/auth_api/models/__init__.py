@@ -20,6 +20,7 @@ from sqlalchemy.engine import Engine  # noqa: I001, I003, I004
 # noqa: I001, I003, I004
 from sbc_common_components.tracing.db_tracing import DBTracing  # noqa: I001, I004
 
+from .account_login_options import AccountLoginOptions
 from .account_payment_settings import AccountPaymentSettings
 from .affidavit import Affidavit
 from .affidavit_status import AffidavitStatus

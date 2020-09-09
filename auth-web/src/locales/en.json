@@ -41,6 +41,8 @@
   "noActiveUsersLabel": "No Active Users",
   "noActiveAccountsLabel": "No Active Accounts",
   "noTransactionList": "No Transaction Records",
+  "noStatementsList": "No Statement Records",
+  "noGLCodeList": "No General Ledger Codes found",
   "pageNotFoundTitle": "Page not found",
   "pageNotFoundMsg": "The page you are looking for has been removed or doesn't exist.",
   "singleOwnerErrorTitle": "Unable to Leave account",
@@ -77,6 +79,7 @@
   "pendingAffidavitReviewTitle": "Thanks for creating the account {team} at BC Registries & Online Services.",
   "pendingAffidvitReviewMessage": "Once your account has been reviewed and approved you will receive\n\nan email allowing you to activate and manage the account. \n\nPlease allow 5 business days for this process.",
   "extraProdOrgSuccessTitle": "Your BC Registries account has been created and is being reviewed.",
-  "extraProdOrgSuccessMessage": "Once your account has been reviewed and approved you will receive an email allowing you to activate and manage the account. \n\nPlease allow 5 business days for this process."
+  "extraProdOrgSuccessMessage": "Once your account has been reviewed and approved you will receive an email allowing you to activate and manage the account. \n\nPlease allow 5 business days for this process.",
+  "noPendingAccountsLabel": "No Pending Invitations"
 
 }
