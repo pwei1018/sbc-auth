@@ -36,20 +36,6 @@ jobs:
         run: |
           vaults='[{ "vault": "shared", "application": ["jwt"]}, {"vault": "relationship","application": ["status-api", "sentry"]}]'
           ./scripts/1pass.sh ${{ secrets.op_parameters }} -m "secret" -e "${{ github.event.inputs.TAG_NAME }}" -v "${vaults}" -a "${IMAGE_NAME}-${{ github.event.inputs.TAG_NAME }}" -n ${{ secrets.OPENSHIFT_REPOSITORY_DEV}}
-      - name: Log into registry
-        run: echo "${{ secrets.OPENSHIFT_SA_TOKEN }}" | docker login ${{ secrets.OPENSHIFT_DOCKER_REGISTRY }} -u ${{ secrets.OPENSHIFT_SA_NAME}} --password-stdin
-      - name: Build image
-        working-directory: ./status-api
-        run: |
-          docker build . --file Dockerfile --tag image
-      - name: Push image
-        working-directory: ./status-api
-        run: |
-          IMAGE_ID=${{ secrets.OPENSHIFT_DOCKER_REGISTRY }}/${{ secrets.OPENSHIFT_REPOSITORY_TOOLS }}/$IMAGE_NAME
-          docker tag image $IMAGE_ID:latest
-          docker push $IMAGE_ID:latest
-          docker image tag $IMAGE_ID:latest $IMAGE_ID:${{ github.event.inputs.TAG_NAME }}
-          docker push $IMAGE_ID:${{ github.event.inputs.TAG_NAME }}
       - name: Rollout new deployment
         working-directory: ./status-api
         run: |
