@@ -1,5 +1,6 @@
 gunicorn
 Flask
+flask-caching
 flask-restx
 flask-jwt-oidc
 python-dotenv
@@ -8,4 +9,8 @@ jsonschema
 requests
 sentry-sdk[flask]
 arrow
-Werkzeug<2
+Werkzeug
+gspread
+oauth2client
+pandas
+markupsafe

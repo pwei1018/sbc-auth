@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Resource for Service status endpoints."""
+"""Resource for in-app notifications endpoints."""
 from http import HTTPStatus
 
 from flask import jsonify
@@ -21,7 +21,7 @@ from status_api.services.inapp_notificaitons import InAppNotifications as InAppN
 from status_api.utils.util import cors_preflight
 
 
-API = Namespace('whatsnew', description='Whats New')
+API = Namespace('inapp', description='InApp Notifications Service System')
 
 INAPP_NOTIFICATIONS_SERVICE = InAppNotificationsService()
 
@@ -29,13 +29,13 @@ INAPP_NOTIFICATIONS_SERVICE = InAppNotificationsService()
 @cors_preflight('GET')
 @API.route('', methods=['GET', 'OPTIONS'], strict_slashes=False)
 @API.route('/<string:application_name>', methods=['GET', 'OPTIONS'])
-class WhatsNew(Resource):
-    """Endpoint resource to calculate fee."""
+class InAppNotifications(Resource):
+    """Endpoint resource to get in-app notifications."""
 
     @staticmethod
     @cors.crossdomain(origin='*')
     @API.response(200, 'OK')
     def get(application_name: str = 'ALL'):
-        """Get the service schedule and return status and next schedule date/time."""
-        response, status = INAPP_NOTIFICATIONS_SERVICE.get_whatsnew(application_name), HTTPStatus.OK
+        """Get the in-app notifications."""
+        response, status = INAPP_NOTIFICATIONS_SERVICE.get_inapp_notificaitons(application_name), HTTPStatus.OK
         return jsonify(response), status

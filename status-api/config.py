@@ -52,13 +52,19 @@ def get_named_config(config_name: str = 'production'):
 class _Config(object):  # pylint: disable=too-few-public-methods
     """Base class configuration that should set reasonable defaults for all the other configurations. """
     PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+    ENVIRONMENT = os.getenv('FLASK_ENV', 'development')
 
     SENTRY_DSN = os.getenv('SENTRY_DSN')
 
     SERVICE_SCHEDULE = os.getenv('SERVICE_SCHEDULE')
     PAYBC_OUTAGE_MESSAGE = os.getenv('PAYBC_OUTAGE_MESSAGE')
 
-    WHATSNEW = os.getenv('WHATSNEW')
+    IN_APP_CACHE_TIMEOUT = int(os.getenv('IN_APP_CACHE_TIMEOUT', '300'))
+
+    GOOGLE_CREDS = os.getenv('GOOGLE_CREDS')
+    GOOGLE_SPREADSHEET_KEY = os.getenv('GOOGLE_SPREADSHEET_KEY')
+    SYSTEM_BANNER_SHEET_NAME = os.getenv('SYSTEM_BANNER_SHEET_NAME')
+    WHATS_NEW_SHEET_NAME = os.getenv('WHATS_NEW_SHEET_NAME')
 
     TESTING = False
     DEBUG = True
@@ -132,66 +138,6 @@ class TestConfig(_Config):  # pylint: disable=too-few-public-methods
 
     DEBUG = True
     TESTING = True
-
-    WHATSNEW = [{"id": 1,
-                 "date": "2022-01-01",
-                "labels": "New Feature",
-                 "title": "Modernization Update",
-                 "description": "<p><p>Hey there, </p> \
-                                <p>We introduce a new sign-in flow to let you log in</p> \
-                                <p>with BC services card. This will help you keep track</p> \
-                                <p>of this and that more effectively.</p> \
-                                <ul>\
-                                <li>Business Dashboard</li>\
-                                <li>Name Request</li>\
-                                <li>PPR</li> \
-                                </ul> \
-                                <p><b>Please check it out! </b></p>",
-                 "app": "ALL",
-                 "priority": True,
-                 "read": False
-                 },
-                {"id": 2,
-                 "date": "2022-01-03",
-                 "labels": "Improvement",
-                 "title": "Modernization Update",
-                 "description": "<p><p>Hey there, </p> \
-                                <p>We intro Starting and managing Benefit</p> \
-                                <p>Companies, Cooperative Associations and Name</p>\
-                                <p>Requests. BC OnLine will continue to be used</p>\
-                                <p>for all other applications.</p>",
-                 "app": "ALL",
-                 "priority": False,
-                 "read": False
-                 },
-                {"id": 3,
-                 "date": "2022-01-19",
-                 "labels": "Announcement",
-                 "title": "Coming soon",
-                 "description": "<ul>\
-                                <li>Wills Search and Registration - 2021 </li>\
-                                <li>Personal Property Registry - 2022</li>\
-                                <li>OneStop Sole Proprietorship, General Partnership Registrations and maintenance filings - 2022</li> \
-                                <li>Stages so users can track progress</li> \
-                                </ul>",
-                 "app": "ALL",
-                 "priority": False,
-                 "read": False
-                 },
-                {"id": 4,
-                 "date": "2022-02-19",
-                 "labels": "Announcement",
-                 "title": "Coming soon",
-                 "description": "<ul>\
-                                <li>Wills Search and Registration - 2021 </li>\
-                                <li>Personal Property Registry - 2022</li>\
-                                <li>OneStop Sole Proprietorship, General Partnership Registrations and maintenance filings - 2022</li> \
-                                <li>Stages so users can track progress</li> \
-                                </ul>",
-                 "app": "ALL",
-                 "priority": True,
-                 "read": False
-                 }]
 
 
 class ProdConfig(_Config):  # pylint: disable=too-few-public-methods

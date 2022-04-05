@@ -18,6 +18,11 @@ A simple decorator to add the options method to a Request Class.
 """
 import re
 
+import arrow
+
+
+LOCAL_TIMEZONE = 'US/Pacific'
+
 
 def cors_preflight(methods):
     """Render an option method on the class."""
@@ -49,3 +54,13 @@ def snake2camelback(snake_dict: dict):
         converted_key = re.sub(r'_([a-z])', lambda x: x.group(1).upper(), key)
         converted_obj[converted_key] = snake_dict[key]
     return converted_obj
+
+
+def convert_datetime(date_time: str):
+    """Convert the string date to date ."""
+    return arrow.get(date_time, 'YYYY-MM-DD HH:mm').replace(tzinfo=LOCAL_TIMEZONE)
+
+
+def get_today():
+    """Get today."""
+    return arrow.Arrow.utcnow().to(LOCAL_TIMEZONE)

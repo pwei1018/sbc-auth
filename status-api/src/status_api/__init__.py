@@ -25,6 +25,7 @@ from sentry_sdk.integrations.flask import FlaskIntegration  # pylint: disable=un
 
 from config import CONFIGURATION, _Config  # pylint: disable=import-error
 from status_api import models
+from status_api.services.cache import cache
 from status_api.utils.run_version import get_run_version
 from status_api.utils.util_logging import setup_logging
 
@@ -36,10 +37,11 @@ def create_app(run_mode=os.getenv('FLASK_ENV', 'production')):
     """Return a configured Flask App using the Factory method."""
     app = Flask(__name__, template_folder='templates')
     app.config.from_object(CONFIGURATION[run_mode])
+    cache.init_app(app)
 
     # Configure Sentry
     if app.config.get('SENTRY_DSN', None):
-        sentry_sdk.init(
+        sentry_sdk.init(  # pylint: disable=abstract-class-instantiated
             dsn=app.config.get('SENTRY_DSN'),
             integrations=[FlaskIntegration()]
         )

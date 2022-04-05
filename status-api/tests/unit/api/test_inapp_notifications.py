@@ -12,24 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests to assure the whatsnew end-point."""
+"""Tests to assure the inapp notifications end-point."""
 
 
-def test_whatsnew(client):
+def test_inapp(client):
     """Assert that the endpoint returns 200 with actual result."""
-    rv = client.get('/api/v1/whatsnew')
+    rv = client.get('/api/v1/inapp')
     assert rv.status_code == 200
 
 
-def test_whatsnew_with_slash(client):
+def test_inapp_with_slash(client):
     """Assert that the endpoint returns 200 with actual result."""
-    rv = client.get('/api/v1/whatsnew/')
+    rv = client.get('/api/v1/inapp/')
     assert rv.status_code == 200
 
 
-def test_whatsnew_with_application_name(client):
+def test_inapp_with_application_name(client):
     """Assert that the endpoint returns 200 with actual result."""
     application_name = 'PPR'
 
-    rv = client.get(f'/api/v1/whatsnew/{application_name}')
+    rv = client.get(f'/api/v1/inapp/{application_name}')
     assert rv.status_code == 200

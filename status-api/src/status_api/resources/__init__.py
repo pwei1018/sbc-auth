@@ -25,6 +25,7 @@ from flask import Blueprint
 from sbc_common_components.exception_handling.exception_handler import ExceptionHandler
 
 from .apihelper import Api
+from .inapp_notifications import API as INAPP_API
 from .meta import API as META_API
 from .ops import API as OPS_API
 from .status import API as STATUS_API
@@ -66,3 +67,4 @@ HANDLER = ExceptionHandler(API)
 API.add_namespace(META_API, path='/meta')
 API.add_namespace(STATUS_API, path='/status/<string:service_name>')
 API.add_namespace(WHATSNEW_API, path='/whatsnew')
+API.add_namespace(INAPP_API, path='/inapp')

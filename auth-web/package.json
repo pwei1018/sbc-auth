@@ -2,6 +2,8 @@
   "name": "auth-web",
   "version": "0.1.5",
   "private": true,
+  "appName": "BC Registry Home",
+  "sbcName": "SBC Common Components",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build --mode production",
@@ -38,7 +40,8 @@
     "vuelidate": "^0.7.5",
     "vuetify": "2.2.7",
     "vuex": "^3.2.0",
-    "vuex-class": "^0.3.2"
+    "vuex-class": "^0.3.2",
+    "webpack-remove-serviceworker-plugin": "^1.0.0"
   },
   "devDependencies": {
     "@kazupon/vue-i18n-loader": "^0.3.0",
